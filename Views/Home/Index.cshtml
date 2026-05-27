@@ -1,0 +1,992 @@
+@{
+    ViewData["Title"] = "Bảng điều khiển";
+}
+
+<!-- Custom Header -->
+<header class="app-header">
+    <div class="brand-section">
+        <h1 class="brand-title">Hệ thống Quản lý Nhân sự & Ca làm</h1>
+        <span class="brand-subtitle">Dịch vụ đặt xe chuyên nghiệp</span>
+    </div>
+    <div class="user-profile">
+        <div class="profile-info">
+            <div class="profile-role">Quản trị viên</div>
+            <div class="profile-email">admin@example.com</div>
+        </div>
+        <div class="profile-avatar">A</div>
+    </div>
+</header>
+
+<!-- Tabs Navigation -->
+<nav class="tabs-navigation">
+    <button class="tab-btn active" data-tab="dashboard">
+        <i class="fas fa-th-large"></i> Tổng quan
+    </button>
+    <button class="tab-btn" data-tab="personnel">
+        <i class="fas fa-users"></i> Quản lý nhân sự
+    </button>
+    <button class="tab-btn" data-tab="scheduling">
+        <i class="fas fa-calendar-alt"></i> Phân ca làm việc
+    </button>
+    <button class="tab-btn" data-tab="settings">
+        <i class="fas fa-cog"></i> Cài đặt
+    </button>
+</nav>
+
+<!-- 1. TỔNG QUAN (DASHBOARD) TAB -->
+<section id="tab-dashboard" class="tab-content active">
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-info">
+                <span class="stat-label">Tổng nhân sự</span>
+                <span class="stat-value" id="stat-total">--</span>
+            </div>
+            <div class="stat-icon-wrapper">
+                <i class="fas fa-user-friends"></i>
+            </div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-info">
+                <span class="stat-label">Đang làm việc</span>
+                <span class="stat-value" id="stat-working">--</span>
+            </div>
+            <div class="stat-icon-wrapper">
+                <i class="fas fa-user-check"></i>
+            </div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-info">
+                <span class="stat-label">Nghỉ phép/Vắng</span>
+                <span class="stat-value" id="stat-leave">--</span>
+            </div>
+            <div class="stat-icon-wrapper">
+                <i class="fas fa-user-slash"></i>
+            </div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-info">
+                <span class="stat-label">Tài xế hoạt động</span>
+                <span class="stat-value" id="stat-drivers">--</span>
+            </div>
+            <div class="stat-icon-wrapper">
+                <i class="fas fa-car"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notices Panel -->
+    <div class="notice-panel">
+        <h3 class="panel-title">
+            <i class="fas fa-exclamation-circle animate-pulse"></i> Thông báo quan trọng
+        </h3>
+        <div class="alerts-list" id="alerts-list">
+            <!-- Dynamic alerts go here -->
+            <div class="alert-item orange">
+                <i class="fas fa-exclamation-triangle"></i> Đang tải thông báo...
+            </div>
+        </div>
+    </div>
+
+    <!-- Today Shifts and Regions Distribution -->
+    <div class="dashboard-grid">
+        <!-- Ca làm hôm nay -->
+        <div class="grid-card">
+            <h3 class="panel-title" style="color: var(--text-primary);">
+                <i class="fas fa-clock" style="color: var(--accent-blue);"></i> Ca làm hôm nay
+            </h3>
+            <div class="shift-today-list" id="shifts-today-list">
+                <!-- Today shifts summary go here -->
+                <div style="color: var(--text-secondary); text-align: center; padding: 20px;">Đang tải danh sách ca...</div>
+            </div>
+        </div>
+
+        <!-- Phân bổ theo khu vực -->
+        <div class="grid-card">
+            <h3 class="panel-title" style="color: var(--text-primary);">
+                <i class="fas fa-map-marked-alt" style="color: var(--accent-purple);"></i> Phân bổ theo khu vực
+            </h3>
+            <div class="region-list" id="region-list">
+                <!-- Region progress bars go here -->
+                <div style="color: var(--text-secondary); text-align: center; padding: 20px;">Đang tải dữ liệu...</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2. QUẢN LÝ NHÂN SỰ TAB -->
+<section id="tab-personnel" class="tab-content">
+    <!-- Filter Control Bar -->
+    <div class="control-bar">
+        <div class="filters-wrapper">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-personnel" class="search-field" placeholder="Tìm theo họ tên, số điện thoại..." />
+            </div>
+            <select id="filter-role" class="filter-select">
+                <option value="">Tất cả chức vụ</option>
+                <!-- Dynamic options -->
+            </select>
+            <select id="filter-status" class="filter-select">
+                <option value="">Tất cả trạng thái</option>
+                <option value="Đang làm việc">Đang làm việc</option>
+                <option value="Nghỉ phép">Nghỉ phép</option>
+                <option value="Vắng mặt">Vắng mặt</option>
+                <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+            </select>
+        </div>
+        <button class="btn-premium" onclick="openAddPersonnelModal()">
+            <i class="fas fa-plus"></i> Thêm nhân sự mới
+        </button>
+    </div>
+
+    <!-- Personnel Cards Grid -->
+    <div class="personnel-list" id="personnel-container">
+        <!-- Dynamic Personnel cards -->
+        <div style="color: var(--text-secondary); text-align: center; padding: 40px;">Đang tải danh sách nhân sự...</div>
+    </div>
+</section>
+
+<!-- 3. PHÂN CA LÀM VIỆC TAB -->
+<section id="tab-scheduling" class="tab-content">
+    <!-- Scheduling Control Bar -->
+    <div class="schedule-control-bar">
+        <div class="date-selector-wrapper">
+            <i class="fas fa-calendar-day"></i>
+            <span style="font-weight: 600; color: var(--text-secondary);">Chọn ngày làm việc:</span>
+            <input type="date" id="schedule-date-picker" class="date-picker" />
+        </div>
+        <button class="btn-premium" onclick="openAddShiftModal()">
+            <i class="fas fa-plus"></i> Tạo ca làm mới
+        </button>
+    </div>
+
+    <!-- Shift cards list -->
+    <div class="shift-schedule-list" id="shifts-schedule-container">
+        <!-- Dynamic shift cards go here -->
+        <div style="color: var(--text-secondary); text-align: center; padding: 40px;">Đang tải dữ liệu ca làm...</div>
+    </div>
+</section>
+
+<!-- 4. CÀI ĐẶT TAB -->
+<section id="tab-settings" class="tab-content">
+    <div class="settings-grid">
+        <div class="settings-card">
+            <h3 class="settings-section-title">
+                <i class="fas fa-database"></i> Trạng thái Cơ sở dữ liệu
+            </h3>
+            <div class="settings-list">
+                <div class="setting-row">
+                    <div class="setting-details">
+                        <span class="setting-name">SQL Server Host</span>
+                        <span class="setting-description">KKKK\SQLEXPRESS</span>
+                    </div>
+                    <span class="status-badge success"><i class="fas fa-check"></i> Đang kết nối</span>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-details">
+                        <span class="setting-name">Database Name</span>
+                        <span class="setting-description">QL_NhanSu_CaLam_DatXe</span>
+                    </div>
+                    <span class="status-badge success">Ổn định</span>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-details">
+                        <span class="setting-name">Entity Framework Version</span>
+                        <span class="setting-description">EF Core 8.0.10</span>
+                    </div>
+                    <span class="status-badge success">Đã cấu hình</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h3 class="settings-section-title">
+                <i class="fas fa-sliders-h"></i> Cấu hình Hệ thống ca làm
+            </h3>
+            <div class="settings-list">
+                <div class="setting-row">
+                    <div class="setting-details">
+                        <span class="setting-name">Yêu cầu tài xế tối thiểu / ca</span>
+                        <span class="setting-description">Đảm bảo ca tối có tối thiểu số lượng tài xế</span>
+                    </div>
+                    <span style="font-weight: 600; color: var(--accent-blue);">3 nhân sự</span>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-details">
+                        <span class="setting-name">Tự động tính lương</span>
+                        <span class="setting-description">Tính toán dựa trên số ca hoàn thành</span>
+                    </div>
+                    <span class="status-badge success">Kích hoạt</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ======================================================= -->
+<!-- --- MODALS & INTERACTIVE POPUPS (PREMIUM GLASSMORPH) --- -->
+<!-- ======================================================= -->
+
+<!-- A. ADD/EDIT PERSONNEL MODAL -->
+<div class="modal fade" id="personnelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="personnelModalTitle">Thêm nhân sự mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="personnelForm" onsubmit="savePersonnel(event)">
+                <input type="hidden" id="form-nv-id" name="MaNhanVien" value="0" />
+                <div class="modal-body">
+                    <!-- General Details -->
+                    <div class="form-row-premium">
+                        <div class="form-group-premium">
+                            <label for="form-nv-hoten">Họ tên *</label>
+                            <input type="text" id="form-nv-hoten" required class="form-control-premium" placeholder="Nguyễn Văn An" />
+                        </div>
+                        <div class="form-group-premium">
+                            <label for="form-nv-sdt">Số điện thoại *</label>
+                            <input type="text" id="form-nv-sdt" required class="form-control-premium" placeholder="0901234567" />
+                        </div>
+                    </div>
+
+                    <div class="form-row-premium">
+                        <div class="form-group-premium">
+                            <label for="form-nv-email">Email</label>
+                            <input type="email" id="form-nv-email" class="form-control-premium" placeholder="email@example.com" />
+                        </div>
+                        <div class="form-group-premium">
+                            <label for="form-nv-diachi">Địa chỉ</label>
+                            <input type="text" id="form-nv-diachi" class="form-control-premium" placeholder="Quận 1, TP.HCM" />
+                        </div>
+                    </div>
+
+                    <div class="form-row-premium">
+                        <div class="form-group-premium">
+                            <label for="form-nv-gioitinh">Giới tính</label>
+                            <select id="form-nv-gioitinh" class="form-control-premium">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+                        <div class="form-group-premium">
+                            <label for="form-nv-ngaysinh">Ngày sinh</label>
+                            <input type="date" id="form-nv-ngaysinh" class="form-control-premium" />
+                        </div>
+                    </div>
+
+                    <div class="form-row-premium">
+                        <div class="form-group-premium">
+                            <label for="form-nv-chucvu">Chức vụ *</label>
+                            <select id="form-nv-chucvu" required class="form-control-premium" onchange="toggleDriverFields(this.value)">
+                                <!-- Dynamic role list -->
+                            </select>
+                        </div>
+                        <div class="form-group-premium">
+                            <label for="form-nv-trangthai">Trạng thái làm việc</label>
+                            <select id="form-nv-trangthai" class="form-control-premium">
+                                <option value="Đang làm việc">Đang làm việc</option>
+                                <option value="Nghỉ phép">Nghỉ phép</option>
+                                <option value="Vắng mặt">Vắng mặt</option>
+                                <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row-premium">
+                        <div class="form-group-premium">
+                            <label for="form-nv-ngayvaolam">Ngày vào làm</label>
+                            <input type="date" id="form-nv-ngayvaolam" class="form-control-premium" />
+                        </div>
+                        <div class="form-group-premium">
+                            <label for="form-nv-luong">Lương cơ bản (VND)</label>
+                            <input type="number" id="form-nv-luong" class="form-control-premium" placeholder="8000000" />
+                        </div>
+                    </div>
+
+                    <!-- Driver specific details (hidden unless position is Driver) -->
+                    <div id="driver-fields-section" style="display: none; border-top: 1px solid var(--border-color); padding-top: 18px; margin-top: 10px;">
+                        <h4 style="font-family: var(--font-heading); font-size: 14px; font-weight: 700; color: var(--accent-blue); margin-bottom: 16px;">
+                            <i class="fas fa-car"></i> Thông tin Tài xế chuyên biệt
+                        </h4>
+                        <div class="form-row-premium">
+                            <div class="form-group-premium">
+                                <label for="form-tx-bienso">Biển số xe</label>
+                                <input type="text" id="form-tx-bienso" class="form-control-premium" placeholder="51A-123.45" />
+                            </div>
+                            <div class="form-group-premium">
+                                <label for="form-tx-loaixe">Loại xe</label>
+                                <input type="text" id="form-tx-loaixe" class="form-control-premium" placeholder="Toyota Vios - Xe 4 chỗ" />
+                            </div>
+                        </div>
+                        <div class="form-group-premium">
+                            <label for="form-tx-banglai">Giấy phép lái xe (GPLX)</label>
+                            <input type="text" id="form-tx-banglai" class="form-control-premium" placeholder="GPLX Hạng B2-12345" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn-premium">Lưu thông tin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- B. CREATE NEW SHIFT MODAL -->
+<div class="modal fade" id="shiftModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tạo ca làm mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="shiftForm" onsubmit="saveShift(event)">
+                <div class="modal-body">
+                    <div class="form-group-premium">
+                        <label for="form-cl-tenca">Tên ca làm việc *</label>
+                        <input type="text" id="form-cl-tenca" required class="form-control-premium" placeholder="Ví dụ: Ca sáng, Ca tối, Ca Quận 1..." />
+                    </div>
+                    <div class="form-row-premium">
+                        <div class="form-group-premium">
+                            <label for="form-cl-giobd">Giờ bắt đầu *</label>
+                            <input type="time" id="form-cl-giobd" required class="form-control-premium" />
+                        </div>
+                        <div class="form-group-premium">
+                            <label for="form-cl-giokt">Giờ kết thúc *</label>
+                            <input type="time" id="form-cl-giokt" required class="form-control-premium" />
+                        </div>
+                    </div>
+                    <div class="form-group-premium">
+                        <label for="form-cl-mota">Mô tả khu vực / ghi chú</label>
+                        <input type="text" id="form-cl-mota" class="form-control-premium" placeholder="Quận 1, Quận 3..." />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn-premium">Tạo ca</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- C. ASSIGN PERSONNEL TO SHIFT MODAL -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Phân công nhân sự vào ca</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="assignForm" onsubmit="saveAssignment(event)">
+                <input type="hidden" id="assign-shift-id" />
+                <div class="modal-body">
+                    <div class="form-group-premium">
+                        <label>Ca làm việc</label>
+                        <input type="text" id="assign-shift-name" readonly class="form-control-premium" style="background-color: var(--border-color);" />
+                    </div>
+                    <div class="form-group-premium">
+                        <label>Ngày phân công</label>
+                        <input type="text" id="assign-shift-date-label" readonly class="form-control-premium" style="background-color: var(--border-color);" />
+                    </div>
+                    <div class="form-group-premium">
+                        <label for="assign-personnel-select">Chọn nhân sự còn trống *</label>
+                        <select id="assign-personnel-select" required class="form-control-premium">
+                            <!-- Dynamic available list -->
+                        </select>
+                    </div>
+                    <div class="form-group-premium">
+                        <label for="assign-note">Ghi chú phân công (khu vực cụ thể...)</label>
+                        <input type="text" id="assign-note" class="form-control-premium" placeholder="Ví dụ: Phụ trách Quận 1" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn-premium">Xác nhận phân công</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+<script>
+    let rolesData = [];
+    let bootstrapPersonnelModal;
+    let bootstrapShiftModal;
+    let bootstrapAssignModal;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Initialize Modals
+        bootstrapPersonnelModal = new bootstrap.Modal(document.getElementById('personnelModal'));
+        bootstrapShiftModal = new bootstrap.Modal(document.getElementById('shiftModal'));
+        bootstrapAssignModal = new bootstrap.Modal(document.getElementById('assignModal'));
+
+        // Load scheduling default date to today
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('schedule-date-picker').value = todayStr;
+
+        // Init tab events
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetTab = this.getAttribute('data-tab');
+                
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                this.classList.add('active');
+                document.getElementById(`tab-${targetTab}`).classList.add('active');
+
+                // Tab loading dispatch
+                if (targetTab === 'dashboard') {
+                    loadDashboardStats();
+                } else if (targetTab === 'personnel') {
+                    loadPersonnel();
+                } else if (targetTab === 'scheduling') {
+                    loadShiftsSchedule();
+                }
+            });
+        });
+
+        // Listen for filter triggers
+        document.getElementById('search-personnel').addEventListener('input', applyPersonnelFilters);
+        document.getElementById('filter-role').addEventListener('change', applyPersonnelFilters);
+        document.getElementById('filter-status').addEventListener('change', applyPersonnelFilters);
+        document.getElementById('schedule-date-picker').addEventListener('change', loadShiftsSchedule);
+
+        // Initial loadings
+        loadDashboardStats();
+        loadRoles();
+    });
+
+    // ----------------------------------------------------
+    // 1. DATA LOADING FUNCTIONS (AJAX)
+    // ----------------------------------------------------
+
+    // Fetch and display dashboard statistics
+    function loadDashboardStats() {
+        fetch('/Home/GetDashboardStats')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('stat-total').innerText = data.totalPersonnel;
+                document.getElementById('stat-working').innerText = data.workingCount;
+                document.getElementById('stat-leave').innerText = data.leaveCount;
+                document.getElementById('stat-drivers').innerText = data.activeDrivers;
+
+                // Alerts list
+                const alertContainer = document.getElementById('alerts-list');
+                alertContainer.innerHTML = '';
+                data.alerts.forEach((alert, idx) => {
+                    const typeClass = idx % 2 === 0 ? 'orange' : 'blue';
+                    const icon = typeClass === 'orange' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+                    alertContainer.innerHTML += `
+                        <div class="alert-item ${typeClass}">
+                            <i class="fas ${icon}"></i>
+                            <span>${alert}</span>
+                        </div>
+                    `;
+                });
+
+                // Ca làm hôm nay shifts progress
+                const todayShiftsContainer = document.getElementById('shifts-today-list');
+                todayShiftsContainer.innerHTML = '';
+                data.todayShifts.forEach((s, idx) => {
+                    let accent = 'blue-accent';
+                    let badge = 'success';
+                    if (s.tenCa.includes('đêm') || s.tenCa.includes('tối')) accent = 'purple-accent';
+                    if (s.tenCa.includes('sáng')) accent = 'yellow-accent';
+                    if (s.personnelCount < s.requiredCount) badge = 'warning';
+
+                    todayShiftsContainer.innerHTML += `
+                        <div class="shift-today-card ${accent}">
+                            <div class="shift-today-info">
+                                <span class="shift-today-title">${s.tenCa} (${s.gioBatDau} - ${s.gioKetThuc})</span>
+                                <span class="shift-today-meta">${s.personnelCount} nhân sự đang làm việc</span>
+                            </div>
+                            <span class="status-badge ${badge}">${s.status}</span>
+                        </div>
+                    `;
+                });
+
+                // Areas distribution
+                const regionContainer = document.getElementById('region-list');
+                regionContainer.innerHTML = '';
+                data.areaDistribution.forEach(area => {
+                    // Normalize percentage (out of max 20 personnel for visual purposes)
+                    const percent = Math.min(Math.round((area.count / 20) * 100), 100);
+                    regionContainer.innerHTML += `
+                        <div class="region-item">
+                            <div class="region-header">
+                                <span class="region-name">${area.area}</span>
+                                <span class="region-count">${area.count}</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: ${percent}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            })
+            .catch(err => {
+                console.error("Dashboard statistics loading failed", err);
+                showToast("Lỗi khi tải thống kê tổng quan!", "error");
+            });
+    }
+
+    // Fetch positions/roles for dropdown forms and search options
+    function loadRoles() {
+        fetch('/NhanVien/GetRoles')
+            .then(res => res.json())
+            .then(data => {
+                rolesData = data;
+                
+                // Populate search filter dropdown
+                const filterRole = document.getElementById('filter-role');
+                filterRole.innerHTML = '<option value="">Tất cả chức vụ</option>';
+                
+                // Populate modal form dropdown
+                const formChucVu = document.getElementById('form-nv-chucvu');
+                formChucVu.innerHTML = '<option value="" disabled selected>Chọn chức vụ...</option>';
+
+                data.forEach(r => {
+                    filterRole.innerHTML += `<option value="${r.maChucVu}">${r.tenChucVu}</option>`;
+                    formChucVu.innerHTML += `<option value="${r.maChucVu}">${r.tenChucVu}</option>`;
+                });
+            });
+    }
+
+    // Fetch and display active personnel list
+    let originalPersonnelList = [];
+    function loadPersonnel() {
+        fetch('/NhanVien/GetAll')
+            .then(res => res.json())
+            .then(data => {
+                originalPersonnelList = data;
+                applyPersonnelFilters();
+            })
+            .catch(err => {
+                showToast("Không thể tải danh sách nhân sự!", "error");
+            });
+    }
+
+    // Filter logic for personnel cards
+    function applyPersonnelFilters() {
+        const query = document.getElementById('search-personnel').value.toLowerCase().trim();
+        const roleFilter = document.getElementById('filter-role').value;
+        const statusFilter = document.getElementById('filter-status').value;
+
+        const container = document.getElementById('personnel-container');
+        container.innerHTML = '';
+
+        const filtered = originalPersonnelList.filter(nv => {
+            const matchesQuery = nv.hoTen.toLowerCase().includes(query) || 
+                                 (nv.soDienThoai && nv.soDienThoai.includes(query)) ||
+                                 (nv.email && nv.email.toLowerCase().includes(query)) ||
+                                 (nv.diaChi && nv.diaChi.toLowerCase().includes(query));
+            const matchesRole = !roleFilter || nv.maChucVu == roleFilter;
+            const matchesStatus = !statusFilter || nv.trangThai === statusFilter;
+
+            return matchesQuery && matchesRole && matchesStatus;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div style="color: var(--text-secondary); text-align: center; padding: 40px;">
+                    Không tìm thấy nhân sự phù hợp với bộ lọc!
+                </div>
+            `;
+            return;
+        }
+
+        filtered.forEach(nv => {
+            // Status badge classes
+            let badgeClass = 'success';
+            if (nv.trangThai === 'Nghỉ phép' || nv.trangThai === 'Vắng mặt') badgeClass = 'warning';
+            if (nv.trangThai === 'Ngừng hoạt động') badgeClass = 'danger';
+
+            // Check if driver
+            let driverInfoHtml = '';
+            if (nv.maChucVu === 3 && nv.driverProfile) {
+                driverInfoHtml = `
+                    <div class="extra-item" title="Giấy phép lái xe">
+                        <i class="fas fa-id-card"></i> GPLX: ${nv.driverProfile.bangLai || 'Chưa cập nhật'}
+                    </div>
+                    <div class="extra-item" title="Phương tiện">
+                        <i class="fas fa-taxi"></i> Xe: ${nv.driverProfile.bienSoXe || 'Chưa cập nhật'} - ${nv.driverProfile.loaiXe || ''}
+                    </div>
+                `;
+            }
+
+            // Area info
+            const areaLabel = nv.maChucVu === 3 ? 'Khu vực hoạt động' : 'Khu vực hoạt động';
+            const locationHtml = `
+                <div class="extra-item">
+                    <i class="fas fa-map-marker-alt"></i> Khu vực: ${nv.diaChi || 'Toàn thành phố'}
+                </div>
+            `;
+
+            container.innerHTML += `
+                <div class="personnel-card">
+                    <div class="avatar-wrapper">
+                        <i class="fas ${nv.maChucVu === 3 ? 'fa-car' : nv.maChucVu === 2 ? 'fa-headset' : 'fa-user-tie'}"></i>
+                    </div>
+                    <div class="personnel-info">
+                        <span class="personnel-name">${nv.hoTen}</span>
+                        <span class="personnel-role">${nv.tenChucVu}</span>
+                    </div>
+                    <div class="contact-details">
+                        <div class="contact-item"><i class="fas fa-phone"></i> ${nv.soDienThoai || 'Chưa có SĐT'}</div>
+                        <div class="contact-item"><i class="fas fa-envelope"></i> ${nv.email || 'Chưa có Email'}</div>
+                    </div>
+                    <div class="extra-details">
+                        ${locationHtml}
+                        ${driverInfoHtml}
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                        <span class="status-badge ${badgeClass}">${nv.trangThai || 'Đang làm việc'}</span>
+                        <div class="card-actions">
+                            <button class="btn-action edit" onclick="openEditPersonnelModal(${nv.maNhanVien})" title="Sửa thông tin"><i class="fas fa-pen"></i></button>
+                            <button class="btn-action delete" onclick="deletePersonnel(${nv.maNhanVien})" title="Xóa nhân sự"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // Fetch and display shifts and assigned employees for date
+    function loadShiftsSchedule() {
+        const date = document.getElementById('schedule-date-picker').value;
+        const container = document.getElementById('shifts-schedule-container');
+        container.innerHTML = '';
+
+        fetch(`/PhanCa/GetShiftsForDate?date=${date}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.length === 0) {
+                    container.innerHTML = `
+                        <div style="color: var(--text-secondary); text-align: center; padding: 40px;">
+                            Chưa cấu hình bất kỳ ca làm nào. Hãy bấm "Tạo ca làm mới"!
+                        </div>
+                    `;
+                    return;
+                }
+
+                data.forEach(s => {
+                    let accent = 'blue-accent';
+                    if (s.tenCa.includes('đêm') || s.tenCa.includes('tối')) accent = 'purple-accent';
+                    if (s.tenCa.includes('sáng')) accent = 'yellow-accent';
+
+                    // Compute completion percentage based on requirement (standard target is 3 staff)
+                    const percent = Math.min(Math.round((s.personnelCount / 3) * 100), 100);
+                    let label = 'Thiếu nhân sự';
+                    let progressBg = '';
+                    if (s.personnelCount >= 3) {
+                        label = 'Đủ nhân sự';
+                    }
+
+                    // Build chips for assigned staff
+                    let chipsHtml = '';
+                    s.assignedPersonnel.forEach(p => {
+                        chipsHtml += `
+                            <div class="personnel-chip">
+                                <div class="chip-avatar">${p.hoTen.substring(0, 1).toUpperCase()}</div>
+                                <span>${p.hoTen} (${p.tenChucVu})</span>
+                                <button class="chip-remove" onclick="removeShiftAssignment(${p.maPhanCa})" title="Gỡ khỏi ca"><i class="fas fa-times"></i></button>
+                            </div>
+                        `;
+                    });
+
+                    container.innerHTML += `
+                        <div class="shift-schedule-card ${accent}">
+                            <div class="shift-schedule-header">
+                                <div class="shift-schedule-info">
+                                    <span class="shift-schedule-title">${s.tenCa}</span>
+                                    <div class="shift-schedule-meta">
+                                        <div class="shift-meta-item"><i class="far fa-clock"></i> Khung giờ: ${s.gioBatDau} - ${s.gioKetThuc}</div>
+                                        <div class="shift-meta-item"><i class="fas fa-map-marker-alt"></i> Khu vực: ${s.moTa || 'Toàn thành phố'}</div>
+                                    </div>
+                                </div>
+                                <div class="shift-completion">
+                                    <span>Nhân sự: ${s.personnelCount}/3 (${percent}%)</span>
+                                    <div class="completion-bar">
+                                        <div class="completion-bar-fill" style="width: ${percent}%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="shift-assigned-wrapper">
+                                <div class="assigned-label">Nhân sự ca làm:</div>
+                                <div class="assigned-chips">
+                                    ${chipsHtml}
+                                    <button class="btn-assign-staff" onclick="openAssignStaffModal(${s.maCa}, '${s.tenCa}')">
+                                        <i class="fas fa-user-plus"></i> Thêm nhân sự
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            })
+            .catch(err => {
+                showToast("Lỗi khi tải lịch ca làm!", "error");
+            });
+    }
+
+    // ----------------------------------------------------
+    // 2. PERSONNEL ACTIONS (ADD / EDIT / DELETE)
+    // ----------------------------------------------------
+
+    function toggleDriverFields(roleId) {
+        const driverFields = document.getElementById('driver-fields-section');
+        if (roleId == "3") {
+            driverFields.style.display = 'block';
+        } else {
+            driverFields.style.display = 'none';
+        }
+    }
+
+    function openAddPersonnelModal() {
+        document.getElementById('personnelForm').reset();
+        document.getElementById('form-nv-id').value = "0";
+        document.getElementById('personnelModalTitle').innerText = "Thêm nhân sự mới";
+        document.getElementById('driver-fields-section').style.display = 'none';
+        
+        bootstrapPersonnelModal.show();
+    }
+
+    function openEditPersonnelModal(id) {
+        const nv = originalPersonnelList.find(x => x.maNhanVien === id);
+        if (!nv) return;
+
+        document.getElementById('form-nv-id').value = nv.maNhanVien;
+        document.getElementById('form-nv-hoten').value = nv.hoTen;
+        document.getElementById('form-nv-sdt').value = nv.soDienThoai || '';
+        document.getElementById('form-nv-email').value = nv.email || '';
+        document.getElementById('form-nv-diachi').value = nv.diaChi || '';
+        document.getElementById('form-nv-gioitinh').value = nv.gioiTinh || 'Nam';
+        document.getElementById('form-nv-ngaysinh').value = nv.ngaySinh || '';
+        document.getElementById('form-nv-chucvu').value = nv.maChucVu || '';
+        document.getElementById('form-nv-trangthai').value = nv.trangThai || 'Đang làm việc';
+        document.getElementById('form-nv-ngayvaolam').value = nv.ngayVaoLam || '';
+        document.getElementById('form-nv-luong').value = nv.luongCoBan || '';
+
+        // Driver details setup
+        if (nv.maChucVu === 3) {
+            document.getElementById('driver-fields-section').style.display = 'block';
+            if (nv.driverProfile) {
+                document.getElementById('form-tx-bienso').value = nv.driverProfile.bienSoXe || '';
+                document.getElementById('form-tx-loaixe').value = nv.driverProfile.loaiXe || '';
+                document.getElementById('form-tx-banglai').value = nv.driverProfile.bangLai || '';
+            } else {
+                document.getElementById('form-tx-bienso').value = '';
+                document.getElementById('form-tx-loaixe').value = '';
+                document.getElementById('form-tx-banglai').value = '';
+            }
+        } else {
+            document.getElementById('driver-fields-section').style.display = 'none';
+        }
+
+        document.getElementById('personnelModalTitle').innerText = "Cập nhật thông tin nhân sự";
+        bootstrapPersonnelModal.show();
+    }
+
+    function savePersonnel(e) {
+        e.preventDefault();
+        
+        const id = parseInt(document.getElementById('form-nv-id').value);
+        const data = {
+            maNhanVien: id,
+            hoTen: document.getElementById('form-nv-hoten').value,
+            soDienThoai: document.getElementById('form-nv-sdt').value,
+            email: document.getElementById('form-nv-email').value || null,
+            diaChi: document.getElementById('form-nv-diachi').value || null,
+            gioiTinh: document.getElementById('form-nv-gioitinh').value,
+            ngaySinh: document.getElementById('form-nv-ngaysinh').value || null,
+            maChucVu: parseInt(document.getElementById('form-nv-chucvu').value),
+            trangThai: document.getElementById('form-nv-trangthai').value,
+            ngayVaoLam: document.getElementById('form-nv-ngayvaolam').value || null,
+            luongCoBan: document.getElementById('form-nv-luong').value ? parseFloat(document.getElementById('form-nv-luong').value) : null,
+
+            // Driver specifics
+            bienSoXe: document.getElementById('form-tx-bienso').value || null,
+            loaiXe: document.getElementById('form-tx-loaixe').value || null,
+            bangLai: document.getElementById('form-tx-banglai').value || null
+        };
+
+        const endpoint = id === 0 ? '/NhanVien/Create' : '/NhanVien/Edit';
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                showToast(res.message, "success");
+                bootstrapPersonnelModal.hide();
+                loadPersonnel();
+                loadDashboardStats(); // Refresh counters too
+            } else {
+                showToast(res.message, "error");
+            }
+        })
+        .catch(err => {
+            showToast("Lỗi kết nối máy chủ!", "error");
+        });
+    }
+
+    function deletePersonnel(id) {
+        if (!confirm("Bạn có chắc chắn muốn xóa nhân sự này cùng tất cả thông tin liên quan (lịch phân ca, chấm công)? Hành động này không thể hoàn tác.")) {
+            return;
+        }
+
+        fetch(`/NhanVien/Delete?id=${id}`, {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                showToast(res.message, "success");
+                loadPersonnel();
+                loadDashboardStats();
+            } else {
+                showToast(res.message, "error");
+            }
+        })
+        .catch(err => {
+            showToast("Lỗi khi xóa nhân viên!", "error");
+        });
+    }
+
+    // ----------------------------------------------------
+    // 3. SHIFT & SCHEDULING ACTIONS
+    // ----------------------------------------------------
+
+    function openAddShiftModal() {
+        document.getElementById('shiftForm').reset();
+        bootstrapShiftModal.show();
+    }
+
+    function saveShift(e) {
+        e.preventDefault();
+
+        const data = {
+            tenCa: document.getElementById('form-cl-tenca').value,
+            gioBatDau: document.getElementById('form-cl-giobd').value,
+            gioKetThuc: document.getElementById('form-cl-giokt').value,
+            moTa: document.getElementById('form-cl-mota').value || null
+        };
+
+        fetch('/PhanCa/CreateShift', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                showToast(res.message, "success");
+                bootstrapShiftModal.hide();
+                loadShiftsSchedule();
+                loadDashboardStats();
+            } else {
+                showToast(res.message, "error");
+            }
+        })
+        .catch(err => {
+            showToast("Không thể tạo ca làm!", "error");
+        });
+    }
+
+    function openAssignStaffModal(shiftId, shiftName) {
+        const date = document.getElementById('schedule-date-picker').value;
+        document.getElementById('assign-shift-id').value = shiftId;
+        document.getElementById('assign-shift-name').value = shiftName;
+        document.getElementById('assign-shift-date-label').value = date;
+        document.getElementById('assign-note').value = '';
+
+        // Query available employees for this day
+        const select = document.getElementById('assign-personnel-select');
+        select.innerHTML = '<option value="" disabled selected>Đang kiểm tra nhân sự...</option>';
+
+        fetch(`/PhanCa/GetAvailablePersonnelForDate?date=${date}&shiftId=${shiftId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.length === 0) {
+                    select.innerHTML = '<option value="" disabled>Không còn nhân sự trống nào trong ngày này!</option>';
+                    return;
+                }
+
+                select.innerHTML = '<option value="" disabled selected>Chọn một nhân sự...</option>';
+                data.forEach(p => {
+                    select.innerHTML += `<option value="${p.maNhanVien}">${p.hoTen} (${p.tenChucVu})</option>`;
+                });
+            });
+
+        bootstrapAssignModal.show();
+    }
+
+    function saveAssignment(e) {
+        e.preventDefault();
+
+        const date = document.getElementById('schedule-date-picker').value;
+        const data = {
+            maNhanVien: parseInt(document.getElementById('assign-personnel-select').value),
+            maCa: parseInt(document.getElementById('assign-shift-id').value),
+            ngayLam: date,
+            ghiChu: document.getElementById('assign-note').value || null
+        };
+
+        fetch('/PhanCa/Assign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                showToast(res.message, "success");
+                bootstrapAssignModal.hide();
+                loadShiftsSchedule();
+                loadDashboardStats();
+            } else {
+                showToast(res.message, "error");
+            }
+        })
+        .catch(err => {
+            showToast("Lỗi khi phân công nhân sự!", "error");
+        });
+    }
+
+    function removeShiftAssignment(id) {
+        if (!confirm("Xác nhận gỡ nhân viên này khỏi ca làm việc hiện tại?")) {
+            return;
+        }
+
+        fetch(`/PhanCa/RemoveAssignment?id=${id}`, {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                showToast(res.message, "success");
+                loadShiftsSchedule();
+                loadDashboardStats();
+            } else {
+                showToast(res.message, "error");
+            }
+        })
+        .catch(err => {
+            showToast("Không thể gỡ nhân sự!", "error");
+        });
+    }
+</script>
+}
